@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "auth-service/docs"
+	docs "auth-service/docs"
 	"auth-service/internal/auth/app"
 	"auth-service/internal/auth/config"
 	grpcHandler "auth-service/internal/auth/delivery/grpc"
@@ -19,11 +19,16 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
+	echoMiddleware "github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"google.golang.org/grpc"
 )
 
 func main() {
+
+	docs.SwaggerInfo.Host = "34.101.41.221:8084"
+	docs.SwaggerInfo.Schemes = []string{"http"}
+
 	// 1. Load env file
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
@@ -50,6 +55,8 @@ func main() {
 	// === START HTTP SERVER ===
 	go func() {
 		e := echo.New()
+		e.Use(echoMiddleware.CORS()) // ini WAJIB untuk Swagger!
+
 		e.GET("/swagger/*", echoSwagger.WrapHandler)
 		e.POST("/register", authHTTP.Register)
 		e.POST("/login", authHTTP.Login)
