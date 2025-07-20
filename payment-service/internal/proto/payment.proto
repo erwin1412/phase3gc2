@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package payment;
+
+option go_package = "../pb;pb";
+
+// ==== Payment message ====
+message Payment {
+  string id = 1;
+  string email = 2;
+  double amount = 3;
+  string status = 4;
+  string created_at = 5;
+}
+
+// ==== Request ====
+message CreatePaymentRequest {
+  string email = 1;
+  double amount = 2;
+}
+
+message UpdatePaymentRequest {
+  string id = 1;
+  string status = 2;
+}
+
+message GetByIDRequest {
+  string id = 1;
+}
+
+message Empty {} // Untuk GetAll & Delete
+
+// ==== Response ====
+message PaymentList {
+  repeated Payment payments = 1;
+}
+
+// ==== Service ====
+service PaymentService {
+  rpc CreatePayment (CreatePaymentRequest) returns (Payment);
+  rpc GetAllPayments (Empty) returns (PaymentList);
+  rpc GetPaymentByID (GetByIDRequest) returns (Payment);
+  rpc UpdatePayment (UpdatePaymentRequest) returns (Payment);
+  rpc DeletePayment (GetByIDRequest) returns (Empty);
+}

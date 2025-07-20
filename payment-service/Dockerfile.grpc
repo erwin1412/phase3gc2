@@ -1,0 +1,31 @@
+# =====================================
+# Stage 1: Build stage pakai golang:1.24-alpine
+# =====================================
+FROM golang:1.24-alpine AS build
+
+WORKDIR /app
+
+# Copy dependency manifest
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy seluruh source
+COPY . .
+
+# Build binary → hasilkan binary `payment-grpc`
+RUN go build -o payment-grpc ./cmd/server/main.go
+
+# =====================================
+# Stage 2: Minimal runtime
+# =====================================
+FROM alpine:latest
+
+WORKDIR /root/
+
+COPY --from=build /app/payment-grpc .
+
+COPY .env .
+
+EXPOSE 50051
+
+CMD ["./payment-grpc"]

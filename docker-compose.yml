@@ -1,0 +1,175 @@
+version: '3.8'
+
+services:
+  # MongoDB Service
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=secret
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: [
+        "CMD",
+        "mongosh",
+        "--username", "admin",
+        "--password", "secret",
+        "--authenticationDatabase", "admin",
+        "--eval", "db.adminCommand('ping')"
+      ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - backend
+
+  # Product Service
+  product-service:
+    build:
+      context: ./product-service
+    container_name: product-service
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - MONGO_URI=mongodb://admin:secret@mongodb:27017/product_db?authSource=admin
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - backend
+
+  # Transaction Service
+  transaction-service:
+    build:
+      context: ./transaction-service
+    container_name: transaction-service
+    ports:
+      - "8082:8082"
+    environment:
+      - PRODUCT_URL=http://product-service:8081
+      - PAYMENT_URL=http://payment-service:8083
+      - PORT=8082
+      - MONGO_URI=mongodb://admin:secret@mongodb:27017/transaction_db?authSource=admin
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - backend
+
+  # Payment Service (HTTP)
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile.http
+    container_name: payment-service
+    ports:
+      - "8083:8083"
+    environment:
+      - PORT=8083
+      - MONGO_URI=mongodb://admin:secret@mongodb:27017/payment_db?authSource=admin
+      - MONGO_DB=payments
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - backend
+
+  # Payment Service (gRPC)
+  payment-grpc:
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile.grpc
+    container_name: payment-grpc
+    ports:
+      - "50051:50051"
+    environment:
+      - GRPC_PORT=50051
+      - MONGO_URI=mongodb://admin:secret@mongodb:27017/payment_db?authSource=admin
+      - MONGO_DB=payments
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - backend
+
+  # API Gateway
+  gateway-service:   # 👈 Hapus 1 spasi di depan
+    build:
+      context: ./gateway-service
+    container_name: gateway-service
+    ports:
+      - "8084:8084"
+    depends_on:
+      - product-service
+      - transaction-service
+      - payment-service
+      - payment-grpc
+      - auth-service 
+    environment:
+      - PRODUCT_URL=http://product-service:8081
+      - TRANSACTION_URL=http://transaction-service:8082
+      - PAYMENT_URL=http://payment-service:8083
+      - PAYMENTGRPC_URL=payment-grpc:50051
+      - AUTHGRPC_URL=auth-service:50052   
+      - PORT=8084
+    networks:
+      - backend
+  # === PostgreSQL ===
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=auth   # Ini nama DB awal
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./auth-service/initdb:/docker-entrypoint-initdb.d  # Jalankan SQL init di start pertama
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      retries: 5
+    networks:
+      - backend
+
+  # === Auth Service ===
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "8085:8085"   # HTTP
+      - "50052:50052" # gRPC
+    environment:
+      - PORT=8085
+      - GRPC_PORT=50052
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=auth
+      - JWT_SECRET=secretkey
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend
+
+
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  postgres_data: 
