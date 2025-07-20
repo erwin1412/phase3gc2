@@ -117,6 +117,7 @@ services:
       - PAYMENTGRPC_URL=payment-grpc:50051
       - AUTHGRPC_URL=auth-service:50052   
       - PORT=8084
+      - JWT_SECRET=secret
     networks:
       - backend
   # === PostgreSQL ===

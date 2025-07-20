@@ -19,10 +19,10 @@ func NewGRPCClients() *GRPCClients {
 	authGrpcAddr := os.Getenv("AUTHGRPC_URL")
 
 	if paymentGrpcAddr == "" {
-		paymentGrpcAddr = "localhost:50051"
+		paymentGrpcAddr = "PAYMENTGRPC_URL:50051"
 	}
 	if authGrpcAddr == "" {
-		authGrpcAddr = "localhost:50052"
+		authGrpcAddr = "auth-service:50052"
 	}
 
 	paymentConn, err := grpc.Dial(paymentGrpcAddr, grpc.WithInsecure())
