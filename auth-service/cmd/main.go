@@ -26,7 +26,9 @@ import (
 
 func main() {
 
-	docs.SwaggerInfo.Host = "34.101.41.221:8085"
+	// docs.SwaggerInfo.Host = "34.101.41.221:8084"
+	// docs.SwaggerInfo.Schemes = []string{"http"}
+	docs.SwaggerInfo.Host = "localhost:8084"
 	docs.SwaggerInfo.Schemes = []string{"http"}
 
 	// 1. Load env file

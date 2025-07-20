@@ -10,6 +10,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
+	echoMiddleware "github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
@@ -21,6 +22,7 @@ func main() {
 	h := handler.NewGatewayHandler(grpcClients)
 
 	e := echo.New()
+	e.Use(echoMiddleware.CORS())
 
 	// === Public ===
 	e.POST("/register", h.RegisterGRPC)
