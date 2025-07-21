@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -27,6 +28,7 @@ func JWTMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		if secret == "" {
 			secret = "secretkey" // fallback
 		}
+		fmt.Println("🔑 [Gateway] JWT Secret:", secret) // ⏮️ Ini yang wajib kamu cek
 
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			return []byte(secret), nil

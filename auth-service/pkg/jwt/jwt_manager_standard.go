@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -16,6 +17,8 @@ func NewManager(secret string) *Manager {
 }
 
 func (j *Manager) GenerateToken(userID, email string) (string, error) {
+	fmt.Println("🔑 [Auth] JWT Secret:", j.Secret) // DEBUG SECRET!
+
 	claims := jwt.MapClaims{
 		"user_id": userID,
 		"email":   email,

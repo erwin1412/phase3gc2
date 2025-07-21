@@ -27,9 +27,10 @@ func main() {
 	// === Public ===
 	e.POST("/register", h.RegisterGRPC)
 	e.POST("/login", h.LoginGRPC)
+	e.Static("/docs", "docs")
 
 	// === Protected ===
-	protected := e.Group("")
+	protected := e.Group("/api")
 	protected.Use(middleware.JWTMiddleware)
 
 	protected.Any("/products*", h.ProxyToProductService)

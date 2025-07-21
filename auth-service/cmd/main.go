@@ -26,10 +26,10 @@ import (
 
 func main() {
 
-	// docs.SwaggerInfo.Host = "34.101.41.221:8084"
-	// docs.SwaggerInfo.Schemes = []string{"http"}
-	docs.SwaggerInfo.Host = "localhost:8084"
+	docs.SwaggerInfo.Host = "34.101.41.221:8084"
 	docs.SwaggerInfo.Schemes = []string{"http"}
+	// docs.SwaggerInfo.Host = "localhost:8084"
+	// docs.SwaggerInfo.Schemes = []string{"http"}
 
 	// 1. Load env file
 	if err := godotenv.Load(); err != nil {
@@ -59,7 +59,7 @@ func main() {
 		e := echo.New()
 		e.Use(echoMiddleware.CORS()) // ini WAJIB untuk Swagger!
 
-		e.GET("/swagger/*", echoSwagger.WrapHandler)
+		e.GET("/auth/swagger/*", echoSwagger.WrapHandler)
 		e.POST("/register", authHTTP.Register)
 		e.POST("/login", authHTTP.Login)
 

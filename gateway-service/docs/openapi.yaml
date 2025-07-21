@@ -1,0 +1,334 @@
+openapi: 3.1.0
+info:
+  title: Gateway API
+  version: 1.0.0
+  description: |
+    API Gateway untuk Auth, Product, Payment, Transaction.
+servers:
+  - url: http://localhost:8084
+    description: Local Gateway Server
+
+security:
+  - BearerAuth: []   # <= semua path pakai JWT
+
+paths:
+
+  # === AUTH ===
+  /register:
+    post:
+      summary: Register user baru
+      security: []  # <= override TANPA auth
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Bad Request
+
+  /login:
+    post:
+      summary: Login user
+      tags: [Auth]
+      security: []  # <= override TANPA auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Bad Request
+
+  # === PRODUCTS ===
+  /products:
+    get:
+      summary: Get all products
+      tags: [Products]
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Create product
+      tags: [Products]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductRequest'
+      responses:
+        '201':
+          description: Created
+
+  /products/{id}:
+    get:
+      summary: Get product by ID
+      tags: [Products]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+    put:
+      summary: Update product by ID
+      tags: [Products]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductRequest'
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Delete product by ID
+      tags: [Products]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: No Content
+
+  # === PAYMENTS ===
+  /payments:
+    get:
+      summary: Get all payments
+      tags: [Payments]
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Create payment
+      tags: [Payments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentRequest'
+      responses:
+        '201':
+          description: Created
+
+  /payments/{id}:
+    get:
+      summary: Get payment by ID
+      tags: [Payments]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+    put:
+      summary: Update payment by ID
+      tags: [Payments]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePaymentRequest'
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Delete payment by ID
+      tags: [Payments]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: No Content
+
+  # === TRANSACTIONS ===
+  /transactions:
+    get:
+      summary: Get all transactions
+      tags: [Transactions]
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Create transaction
+      tags: [Transactions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransactionRequest'
+      responses:
+        '201':
+          description: Created
+
+  /transactions/{id}:
+    get:
+      summary: Get transaction by ID
+      tags: [Transactions]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+    put:
+      summary: Update transaction by ID
+      tags: [Transactions]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTransactionRequest'
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Delete transaction by ID
+      tags: [Transactions]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: No Content
+
+components:
+  schemas:
+    RegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        token:
+          type: string
+
+    CreateProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+        stock:
+          type: integer
+
+    UpdateProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+        stock:
+          type: integer
+
+    CreatePaymentRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        amount:
+          type: number
+
+    UpdatePaymentRequest:
+      type: object
+      properties:
+        status:
+          type: string
+
+    CreateTransactionRequest:
+      type: object
+      properties:
+        productID:
+          type: string
+        paymentID:
+          type: string
+        quantity:
+          type: integer
+
+    UpdateTransactionRequest:
+      type: object
+      properties:
+        status:
+          type: string

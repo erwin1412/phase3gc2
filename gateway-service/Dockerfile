@@ -34,6 +34,7 @@ WORKDIR /root/
 
 # Copy binary from build stage
 COPY --from=build /app/gateway .
+COPY --from=build /app/docs ./docs
 
 # ✅ Copy .env juga
 COPY .env .
