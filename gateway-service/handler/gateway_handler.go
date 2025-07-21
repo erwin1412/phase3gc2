@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"gateway-service/config"
 	pb "gateway-service/internal/pb"
@@ -20,19 +21,52 @@ func NewGatewayHandler(grpcClients *config.GRPCClients) *GatewayHandler {
 	return &GatewayHandler{GRPC: grpcClients}
 }
 
+// ✅ HANYA 1 FUNCTION proxyRequest, yang benar:
+func proxyRequest(c echo.Context, targetBaseURL string) error {
+	// STRIP prefix `/api` supaya /api/products -> /products
+	path := strings.TrimPrefix(c.Request().RequestURI, "/api")
+
+	req, err := http.NewRequest(
+		c.Request().Method,
+		targetBaseURL+path,
+		c.Request().Body,
+	)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create proxy request"})
+	}
+
+	req.Header = c.Request().Header
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, map[string]string{"error": "Failed to connect to downstream service"})
+	}
+	defer resp.Body.Close()
+
+	for k, v := range resp.Header {
+		for _, vv := range v {
+			c.Response().Header().Add(k, vv)
+		}
+	}
+	c.Response().WriteHeader(resp.StatusCode)
+	_, err = io.Copy(c.Response(), resp.Body)
+	return err
+}
+
 // === REST → REST ===
 func (h *GatewayHandler) ProxyToProductService(c echo.Context) error {
-	targetURL := os.Getenv("PRODUCT_URL") + "/api"
+	targetURL := os.Getenv("PRODUCT_URL") // TANPA `/api`
 	return proxyRequest(c, targetURL)
 }
 
 func (h *GatewayHandler) ProxyToTransactionService(c echo.Context) error {
-	targetURL := os.Getenv("TRANSACTION_URL") + "/api"
+	targetURL := os.Getenv("TRANSACTION_URL")
 	return proxyRequest(c, targetURL)
 }
 
 func (h *GatewayHandler) ProxyToPaymentService(c echo.Context) error {
-	targetURL := os.Getenv("PAYMENT_URL") + "/api"
+	targetURL := os.Getenv("PAYMENT_URL")
 	return proxyRequest(c, targetURL)
 }
 
@@ -102,34 +136,34 @@ func (h *GatewayHandler) DeletePaymentGRPC(c echo.Context) error {
 }
 
 // === Proxy Helper ===
-func proxyRequest(c echo.Context, targetURL string) error {
-	req, err := http.NewRequest(
-		c.Request().Method,
-		targetURL+c.Request().RequestURI,
-		c.Request().Body,
-	)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create proxy request"})
-	}
+// func proxyRequest(c echo.Context, targetURL string) error {
+// 	req, err := http.NewRequest(
+// 		c.Request().Method,
+// 		targetURL+c.Request().RequestURI,
+// 		c.Request().Body,
+// 	)
+// 	if err != nil {
+// 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create proxy request"})
+// 	}
 
-	req.Header = c.Request().Header
+// 	req.Header = c.Request().Header
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return c.JSON(http.StatusBadGateway, map[string]string{"error": "Failed to connect to downstream service"})
-	}
-	defer resp.Body.Close()
+// 	client := &http.Client{}
+// 	resp, err := client.Do(req)
+// 	if err != nil {
+// 		return c.JSON(http.StatusBadGateway, map[string]string{"error": "Failed to connect to downstream service"})
+// 	}
+// 	defer resp.Body.Close()
 
-	for k, v := range resp.Header {
-		for _, vv := range v {
-			c.Response().Header().Add(k, vv)
-		}
-	}
-	c.Response().WriteHeader(resp.StatusCode)
-	_, err = io.Copy(c.Response(), resp.Body)
-	return err
-}
+// 	for k, v := range resp.Header {
+// 		for _, vv := range v {
+// 			c.Response().Header().Add(k, vv)
+// 		}
+// 	}
+// 	c.Response().WriteHeader(resp.StatusCode)
+// 	_, err = io.Copy(c.Response(), resp.Body)
+// 	return err
+// }
 
 func (h *GatewayHandler) RegisterGRPC(c echo.Context) error {
 	var req pb.RegisterRequest
