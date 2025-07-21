@@ -5,8 +5,8 @@ info:
   description: |
     API Gateway untuk Auth, Product, Payment, Transaction.
 servers:
-  - url: http://localhost:8084
-    description: Local Gateway Server
+  - url: http://34.101.41.221:8084
+    description: Gateway Server
 
 security:
   - BearerAuth: []   # <= semua path pakai JWT
