@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -101,7 +102,9 @@ func (h *TransactionHandler) GetByID(c echo.Context) error {
 // @Router /transactions [post]
 func (h *TransactionHandler) Create(c echo.Context) error {
 	var req dto.CreateTransactionRequest
+
 	if err := c.Bind(&req); err != nil {
+		fmt.Println("Bind error:", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 

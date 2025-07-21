@@ -390,9 +390,9 @@ components:
     CreateTransactionRequest:
       type: object
       properties:
-        productID:
+        product_id:
           type: string
-        paymentID:
+        payment_id:
           type: string
         quantity:
           type: integer
