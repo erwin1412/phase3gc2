@@ -22,17 +22,17 @@ func NewGatewayHandler(grpcClients *config.GRPCClients) *GatewayHandler {
 
 // === REST → REST ===
 func (h *GatewayHandler) ProxyToProductService(c echo.Context) error {
-	targetURL := os.Getenv("PRODUCT_URL")
+	targetURL := os.Getenv("PRODUCT_URL") + "/api"
 	return proxyRequest(c, targetURL)
 }
 
 func (h *GatewayHandler) ProxyToTransactionService(c echo.Context) error {
-	targetURL := os.Getenv("TRANSACTION_URL")
+	targetURL := os.Getenv("TRANSACTION_URL") + "/api"
 	return proxyRequest(c, targetURL)
 }
 
 func (h *GatewayHandler) ProxyToPaymentService(c echo.Context) error {
-	targetURL := os.Getenv("PAYMENT_URL")
+	targetURL := os.Getenv("PAYMENT_URL") + "/api"
 	return proxyRequest(c, targetURL)
 }
 

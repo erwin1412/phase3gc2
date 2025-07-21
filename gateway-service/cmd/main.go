@@ -22,7 +22,12 @@ func main() {
 	h := handler.NewGatewayHandler(grpcClients)
 
 	e := echo.New()
-	e.Use(echoMiddleware.CORS())
+	// e.Use(echoMiddleware.CORS())
+	e.Use(echoMiddleware.CORSWithConfig(echoMiddleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{echo.GET, echo.HEAD, echo.PUT, echo.PATCH, echo.POST, echo.DELETE, echo.OPTIONS},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+	}))
 
 	// === Public ===
 	e.POST("/register", h.RegisterGRPC)

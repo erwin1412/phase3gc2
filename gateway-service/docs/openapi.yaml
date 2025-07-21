@@ -6,7 +6,7 @@ info:
     API Gateway untuk Auth, Product, Payment, Transaction.
 servers:
   - url: http://34.101.41.221:8084
-    description: Gateway Server
+    description:  Gateway Server
 
 security:
   - BearerAuth: []   # <= semua path pakai JWT
@@ -57,7 +57,7 @@ paths:
           description: Bad Request
 
   # === PRODUCTS ===
-  /products:
+  /api/products:
     get:
       summary: Get all products
       tags: [Products]
@@ -77,7 +77,7 @@ paths:
         '201':
           description: Created
 
-  /products/{id}:
+  /api/products/{id}:
     get:
       summary: Get product by ID
       tags: [Products]
@@ -122,7 +122,7 @@ paths:
           description: No Content
 
   # === PAYMENTS ===
-  /payments:
+  /api/payments:
     get:
       summary: Get all payments
       tags: [Payments]
@@ -142,7 +142,7 @@ paths:
         '201':
           description: Created
 
-  /payments/{id}:
+  /api/payments/{id}:
     get:
       summary: Get payment by ID
       tags: [Payments]
@@ -186,8 +186,73 @@ paths:
         '204':
           description: No Content
 
+
+  /api/payments-grpc:
+    get:
+      summary: Get all payments via gRPC
+      tags: [Payments GRPC]
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Create payment via gRPC
+      tags: [Payments GRPC]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentRequest'
+      responses:
+        '201':
+          description: Created
+
+  /api/payments-grpc/{id}:
+    get:
+      summary: Get payment by ID via gRPC
+      tags: [Payments GRPC]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+    put:
+      summary: Update payment by ID via gRPC
+      tags: [Payments GRPC]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePaymentRequest'
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Delete payment by ID via gRPC
+      tags: [Payments GRPC]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: No Content
+
   # === TRANSACTIONS ===
-  /transactions:
+  /api/transactions:
     get:
       summary: Get all transactions
       tags: [Transactions]
@@ -207,7 +272,7 @@ paths:
         '201':
           description: Created
 
-  /transactions/{id}:
+  /api/transactions/{id}:
     get:
       summary: Get transaction by ID
       tags: [Transactions]
@@ -252,6 +317,11 @@ paths:
           description: No Content
 
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     RegisterRequest:
       type: object
